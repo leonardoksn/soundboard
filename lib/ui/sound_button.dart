@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import '../models/sound.dart';
+import 'equalizer_bars.dart';
 
 class SoundButton extends StatelessWidget {
   final Sound sound;
   final VoidCallback onTap;
   final VoidCallback onEdit;
+  final bool isPlaying;
 
   const SoundButton({
     super.key,
     required this.sound,
     required this.onTap,
     required this.onEdit,
+    this.isPlaying = false,
   });
 
   @override
@@ -45,6 +48,14 @@ class SoundButton extends StatelessWidget {
                 onPressed: onEdit,
               ),
             ),
+            if (isPlaying)
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 6),
+                  child: EqualizerBars(),
+                ),
+              ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '../state/playback_notifier.dart';
 import '../state/providers.dart';
 import 'add_edit_sound_sheet.dart';
 import 'sound_button.dart';
@@ -11,6 +12,7 @@ class SoundboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final soundsAsync = ref.watch(soundsProvider);
+    final playingId = ref.watch(playingSoundProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Soundboard')),
       floatingActionButton: FloatingActionButton(
@@ -50,8 +52,9 @@ class SoundboardScreen extends ConsumerWidget {
                 SoundButton(
                   key: ValueKey(sound.id),
                   sound: sound,
+                  isPlaying: playingId == sound.id,
                   onTap: () =>
-                      ref.read(audioControllerProvider).playFile(sound.filePath),
+                      ref.read(playingSoundProvider.notifier).play(sound),
                   onEdit: () => showAddEditSoundSheet(context, existing: sound),
                 ),
             ],
