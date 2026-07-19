@@ -28,7 +28,7 @@ Future<void> showAddEditSoundSheet(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: _SoundForm(existing: existing),
+      child: SafeArea(child: _SoundForm(existing: existing)),
     ),
   );
 }
