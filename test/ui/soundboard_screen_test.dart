@@ -15,6 +15,8 @@ class FakeSoundPlayer implements SoundPlayer {
   Future<void> stop() async {}
   @override
   Future<void> dispose() async {}
+  @override
+  Stream<void> get onComplete => Stream<void>.empty();
 }
 
 void main() {

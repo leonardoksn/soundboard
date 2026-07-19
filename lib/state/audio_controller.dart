@@ -4,6 +4,9 @@ abstract class SoundPlayer {
   Future<void> play(String path);
   Future<void> stop();
   Future<void> dispose();
+
+  /// Emite um evento quando a reprodução do áudio atual termina naturalmente.
+  Stream<void> get onComplete;
 }
 
 class AudioPlayersSoundPlayer implements SoundPlayer {
@@ -17,6 +20,9 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
 
   @override
   Future<void> dispose() => _player.dispose();
+
+  @override
+  Stream<void> get onComplete => _player.onPlayerComplete;
 }
 
 class AudioController {
@@ -28,6 +34,8 @@ class AudioController {
     await _player.stop();
     await _player.play(path);
   }
+
+  Stream<void> get onComplete => _player.onComplete;
 
   Future<void> dispose() => _player.dispose();
 }
