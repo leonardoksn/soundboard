@@ -45,6 +45,18 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   sqflite_common_ffi: ^2.3.4
+  flutter_launcher_icons: ^0.14.4
+
+# Configuracao do icone do app (flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: false
+  # Icone legado / launchers antigos: arte cheia sobre fundo escuro
+  image_path: "assets/icon/legacy.png"
+  # Icone adaptativo (Android 8+): arte reduzida na zona segura + fundo escuro
+  adaptive_icon_background: "#1c1b18"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
