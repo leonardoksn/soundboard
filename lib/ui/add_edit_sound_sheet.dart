@@ -1,12 +1,14 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../l10n/app_localizations.dart';
 import '../models/sound.dart';
 import '../state/providers.dart';
 import 'sound_colors.dart';
+import 'theme.dart';
 
 /// Primeira cor da paleta (usada como default).
-const int kSoundColorsFirst = 0xFFEF5350;
+const int kSoundColorsFirst = 0xFFD8412F;
 
 typedef FilePickerFn = Future<String?> Function();
 
@@ -24,6 +26,7 @@ Future<void> showAddEditSoundSheet(
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     builder: (_) => Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -69,6 +72,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
+    final l10n = AppLocalizations.of(context);
     final notifier = ref.read(soundsProvider.notifier);
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
@@ -84,7 +88,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
             sourceFilePath: _pickedPath!, name: name, color: _color);
       } catch (_) {
         messenger.showSnackBar(
-            const SnackBar(content: Text('não foi possível importar')));
+            SnackBar(content: Text(l10n.importError)));
         return;
       }
     }
@@ -92,18 +96,24 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
   }
 
   Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
     final navigator = Navigator.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Excluir som?'),
+        backgroundColor: BoardColors.chassis,
+        title: Text(l10n.deleteConfirm.toUpperCase(),
+            style: BoardText.stencil.copyWith(
+                color: BoardColors.cream, fontSize: 15)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar')),
+              child: Text(l10n.cancel.toUpperCase(), style: BoardText.stencil)),
           TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Excluir')),
+              child: Text(l10n.delete.toUpperCase(),
+                  style:
+                      BoardText.stencil.copyWith(color: BoardColors.rec))),
         ],
       ),
     );
@@ -115,53 +125,140 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      decoration: const BoxDecoration(
+        color: BoardColors.chassis,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        border: Border(top: BorderSide(color: Colors.black45, width: 2)),
+      ),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(_isEditing ? 'Editar som' : 'Novo som',
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
+          // handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: BoardColors.creamDim,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Text((_isEditing ? l10n.editSound : l10n.newSound).toUpperCase(),
+              style: BoardText.wordmark.copyWith(fontSize: 18)),
+          const SizedBox(height: 16),
           if (!_isEditing)
             OutlinedButton.icon(
               onPressed: _pickFile,
-              icon: const Icon(Icons.audiotrack),
-              label: Text(_pickedPath == null
-                  ? 'Escolher arquivo'
-                  : 'Arquivo selecionado'),
+              icon: const Icon(Icons.audiotrack, color: BoardColors.cream),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: BoardColors.cream,
+                side: const BorderSide(color: BoardColors.creamDim),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              label: Text(
+                (_pickedPath == null ? l10n.chooseFile : l10n.fileSelected)
+                    .toUpperCase(),
+                style: BoardText.stencil.copyWith(color: BoardColors.cream),
+              ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(labelText: 'Nome'),
+            style: const TextStyle(
+                color: BoardColors.cream, fontFamily: 'Oswald'),
+            cursorColor: BoardColors.rec,
+            decoration: InputDecoration(
+              labelText: l10n.name.toUpperCase(),
+              labelStyle: BoardText.stencil,
+              filled: true,
+              fillColor: BoardColors.well,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: Colors.black54),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(6),
+                borderSide: const BorderSide(color: BoardColors.rec),
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
+          Text(l10n.padLed.toUpperCase(), style: BoardText.stencil),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               for (final c in kSoundColors)
-                GestureDetector(
+                _ColorChip(
+                  color: Color(c),
+                  selected: _color == c,
                   onTap: () => setState(() => _color = c),
-                  child: CircleAvatar(
-                    backgroundColor: Color(c),
-                    child: _color == c
-                        ? const Icon(Icons.check, color: Colors.white)
-                        : null,
-                  ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: _save, child: const Text('Salvar')),
+          const SizedBox(height: 22),
+          FilledButton(
+            onPressed: _save,
+            style: FilledButton.styleFrom(
+              backgroundColor: BoardColors.rec,
+              foregroundColor: BoardColors.cream,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text(l10n.save.toUpperCase(),
+                style: BoardText.stencil.copyWith(
+                    color: BoardColors.cream, fontSize: 14)),
+          ),
           if (_isEditing)
             TextButton(
               onPressed: _delete,
-              child:
-                  const Text('Excluir', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.delete.toUpperCase(),
+                  style:
+                      BoardText.stencil.copyWith(color: BoardColors.rec)),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Chip de cor em estilo LED: aceso (halo) quando selecionado.
+class _ColorChip extends StatelessWidget {
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ColorChip({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: selected ? color : color.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: selected ? BoardColors.cream : Colors.black45,
+            width: selected ? 2 : 1,
+          ),
+          boxShadow: selected
+              ? [BoxShadow(color: color.withValues(alpha: 0.7), blurRadius: 10)]
+              : null,
+        ),
       ),
     );
   }
