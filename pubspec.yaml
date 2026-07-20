@@ -30,6 +30,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.3.3
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   sqflite: ^2.4.1
@@ -64,10 +68,29 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # Gera a classe AppLocalizations a partir dos .arb em lib/l10n.
+  generate: true
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  fonts:
+    # Oswald: condensada industrial (variable font, eixo de peso).
+    # Usada em labels/wordmark (serigrafia do chassi).
+    - family: Oswald
+      fonts:
+        - asset: assets/fonts/Oswald.ttf
+          weight: 300
+        - asset: assets/fonts/Oswald.ttf
+          weight: 500
+        - asset: assets/fonts/Oswald.ttf
+          weight: 700
+    # Share Tech Mono: visor digital (nome do som tocando).
+    - family: ShareTechMono
+      fonts:
+        - asset: assets/fonts/ShareTechMono-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

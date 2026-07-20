@@ -1,0 +1,23 @@
+{
+  "@@locale": "en",
+  "appTitle": "Soundboard",
+  "ready": "Ready",
+  "addPad": "Add pad",
+  "editTooltip": "Edit",
+  "loadError": "Error loading sounds",
+  "retry": "Try again",
+  "emptyState": "No sounds loaded.\nTap Add pad to import.",
+  "newSound": "New sound",
+  "editSound": "Edit sound",
+  "chooseFile": "Choose file",
+  "fileSelected": "File selected",
+  "name": "Name",
+  "padLed": "Pad LED",
+  "save": "Save",
+  "delete": "Delete",
+  "deleteConfirm": "Delete sound?",
+  "cancel": "Cancel",
+  "importError": "couldn't import",
+  "settings": "Settings",
+  "language": "Language"
+}

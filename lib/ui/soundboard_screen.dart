@@ -1,65 +1,256 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '../l10n/app_localizations.dart';
+import '../models/sound.dart';
 import '../state/playback_notifier.dart';
 import '../state/providers.dart';
 import 'add_edit_sound_sheet.dart';
+import 'settings_sheet.dart';
 import 'sound_button.dart';
+import 'theme.dart';
 
 class SoundboardScreen extends ConsumerWidget {
   const SoundboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final soundsAsync = ref.watch(soundsProvider);
     final playingId = ref.watch(playingSoundProvider);
+
+    final sounds = soundsAsync.valueOrNull ?? const <Sound>[];
+    Sound? playing;
+    for (final s in sounds) {
+      if (s.id == playingId) {
+        playing = s;
+        break;
+      }
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Soundboard')),
-      floatingActionButton: FloatingActionButton(
+      backgroundColor: BoardColors.chassis,
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showAddEditSoundSheet(context),
-        child: const Icon(Icons.add),
+        backgroundColor: BoardColors.padTop,
+        foregroundColor: BoardColors.cream,
+        icon: const Icon(Icons.add),
+        label: Text(
+          l10n.addPad.toUpperCase(),
+          style: BoardText.stencil.copyWith(color: BoardColors.cream),
+        ),
       ),
-      body: soundsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Erro ao carregar os sons'),
-              TextButton(
-                onPressed: () => ref.invalidate(soundsProvider),
-                child: const Text('Tentar de novo'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _Faceplate(
+              readout: playing?.name.toUpperCase() ?? l10n.ready.toUpperCase(),
+              readoutColor:
+                  playing == null ? BoardColors.creamDim : Color(playing.color),
+            ),
+            Expanded(
+              child: _Well(
+                child: soundsAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(color: BoardColors.cream),
+                  ),
+                  error: (e, _) => _Message(
+                    message: l10n.loadError.toUpperCase(),
+                    action: TextButton(
+                      onPressed: () => ref.invalidate(soundsProvider),
+                      child: Text(l10n.retry.toUpperCase(),
+                          style: BoardText.stencil
+                              .copyWith(color: BoardColors.rec)),
+                    ),
+                  ),
+                  data: (sounds) {
+                    if (sounds.isEmpty) {
+                      return _Message(message: l10n.emptyState.toUpperCase());
+                    }
+                    return ReorderableGridView.count(
+                      padding: const EdgeInsets.all(14),
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 14,
+                      crossAxisSpacing: 14,
+                      onReorder: (oldIndex, newIndex) => ref
+                          .read(soundsProvider.notifier)
+                          .reorder(oldIndex, newIndex),
+                      children: [
+                        for (final sound in sounds)
+                          SoundButton(
+                            key: ValueKey(sound.id),
+                            sound: sound,
+                            isPlaying: playingId == sound.id,
+                            onTap: () => ref
+                                .read(playingSoundProvider.notifier)
+                                .play(sound),
+                            onEdit: () =>
+                                showAddEditSoundSheet(context, existing: sound),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Placa frontal do equipamento: wordmark + faixa-assinatura 808 + visor.
+class _Faceplate extends StatelessWidget {
+  final String readout;
+  final Color readoutColor;
+  const _Faceplate({required this.readout, required this.readoutColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      decoration: const BoxDecoration(
+        color: BoardColors.chassis,
+        border: Border(
+          bottom: BorderSide(color: Colors.black45, width: 2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              // LED de power
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: BoardColors.rec,
+                  boxShadow: [
+                    BoxShadow(
+                      color: BoardColors.rec.withValues(alpha: 0.8),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+              Text('SOUNDBOARD', style: BoardText.wordmark),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.settings, size: 20),
+                color: BoardColors.creamDim,
+                tooltip: AppLocalizations.of(context).settings,
+                visualDensity: VisualDensity.compact,
+                onPressed: () => showSettingsSheet(context),
+              ),
+              const SizedBox(width: 4),
+              _Readout(text: readout, color: readoutColor),
             ],
           ),
-        ),
-        data: (sounds) {
-          if (sounds.isEmpty) {
-            return const Center(
-              child: Text('Nenhum som ainda.\nToque em + para importar.',
-                  textAlign: TextAlign.center),
-            );
-          }
-          return ReorderableGridView.count(
-            padding: const EdgeInsets.all(12),
-            crossAxisCount: 3,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            onReorder: (oldIndex, newIndex) =>
-                ref.read(soundsProvider.notifier).reorder(oldIndex, newIndex),
-            children: [
-              for (final sound in sounds)
-                SoundButton(
-                  key: ValueKey(sound.id),
-                  sound: sound,
-                  isPlaying: playingId == sound.id,
-                  onTap: () =>
-                      ref.read(playingSoundProvider.notifier).play(sound),
-                  onEdit: () => showAddEditSoundSheet(context, existing: sound),
-                ),
-            ],
-          );
-        },
+          const SizedBox(height: 10),
+          const _Band(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Faixa horizontal de cores da TR-808 (vermelho → laranja → amarelo → osso).
+class _Band extends StatelessWidget {
+  const _Band();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(2),
+      child: Row(
+        children: [
+          for (final c in BoardColors.band)
+            Expanded(child: Container(height: 6, color: c)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Visor digital monoespaçado (nome do som tocando / READY).
+class _Readout extends StatelessWidget {
+  final String text;
+  final Color color;
+  const _Readout({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 130),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: BoardColors.well,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.black54),
+      ),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: BoardText.readout.copyWith(color: color),
+      ),
+    );
+  }
+}
+
+/// Poço escuro e recuado onde vive o grid de pads.
+class _Well extends StatelessWidget {
+  final Widget child;
+  const _Well({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      decoration: BoxDecoration(
+        color: BoardColors.well,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.black54, width: 1.5),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black38,
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+}
+
+/// Mensagem centralizada em estilo serigrafia (estados vazio/erro).
+class _Message extends StatelessWidget {
+  final String message;
+  final Widget? action;
+  const _Message({required this.message, this.action});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(message,
+                textAlign: TextAlign.center, style: BoardText.stencil),
+          ),
+          if (action != null) ...[
+            const SizedBox(height: 12),
+            action!,
+          ],
+        ],
       ),
     );
   }
