@@ -12,9 +12,18 @@ class AppDatabase {
         name      TEXT    NOT NULL,
         file_path TEXT    NOT NULL,
         color     INTEGER NOT NULL,
-        position  INTEGER NOT NULL
+        position  INTEGER NOT NULL,
+        loop      INTEGER NOT NULL DEFAULT 0
       )
     ''');
+  }
+
+  static Future<void> _migrate(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE $table ADD COLUMN loop INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   static Future<Database> open() async {
@@ -22,8 +31,9 @@ class AppDatabase {
     final path = p.join(dir.path, 'soundboard.db');
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, _) => createSchema(db),
+      onUpgrade: _migrate,
     );
   }
 }

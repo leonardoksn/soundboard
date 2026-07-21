@@ -1,10 +1,13 @@
+/// Paleta de LEDs por som — tons quentes coerentes com a faixa da 808.
+/// O corpo do pad é sempre grafite; a cor escolhida vira o LED, o label
+/// e o glow do equalizador.
 const List<int> kSoundColors = [
-  0xFFEF5350, // vermelho
-  0xFFAB47BC, // roxo
-  0xFF5C6BC0, // indigo
-  0xFF29B6F6, // azul
-  0xFF26A69A, // teal
-  0xFF66BB6A, // verde
-  0xFFFFCA28, // amarelo
-  0xFFFF7043, // laranja
+  0xFFD8412F, // vermelho
+  0xFFE8823A, // laranja
+  0xFFE6B34A, // amarelo
+  0xFFF0D98A, // creme quente
+  0xFF6FB98F, // verde menta
+  0xFF4FA3C7, // azul aço
+  0xFFB07BC4, // roxo
+  0xFFE86FA0, // rosa
 ];

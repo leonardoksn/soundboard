@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'data/database.dart';
 import 'data/sound_file_storage.dart';
 import 'data/sound_repository.dart';
+import 'l10n/app_localizations.dart';
+import 'state/locale_notifier.dart';
 import 'state/providers.dart';
 import 'ui/soundboard_screen.dart';
+import 'ui/theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,26 +20,31 @@ Future<void> main() async {
   final docsDir = await getApplicationDocumentsDirectory();
   final storage = SoundFileStorage(Directory(p.join(docsDir.path, 'sounds')));
   final repository = SoundRepository(db: db, storage: storage);
+  final prefs = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
-      overrides: [soundRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        soundRepositoryProvider.overrideWithValue(repository),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: const SoundboardApp(),
     ),
   );
 }
 
-class SoundboardApp extends StatelessWidget {
+class SoundboardApp extends ConsumerWidget {
   const SoundboardApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
     return MaterialApp(
-      title: 'Soundboard',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      theme: buildBoardTheme(),
+      locale: locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: const SoundboardScreen(),
     );
   }

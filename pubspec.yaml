@@ -30,12 +30,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  shared_preferences: ^2.3.3
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   sqflite: ^2.4.1
   path: ^1.9.0
   path_provider: ^2.1.5
   audioplayers: ^6.1.0
+  record: ^7.0.0
   file_picker: ^8.1.6
   reorderable_grid_view: ^2.2.8
   uuid: ^4.5.1
@@ -53,8 +58,8 @@ flutter_launcher_icons:
   ios: false
   # Icone legado / launchers antigos: arte cheia sobre fundo escuro
   image_path: "assets/icon/legacy.png"
-  # Icone adaptativo (Android 8+): arte reduzida na zona segura + fundo escuro
-  adaptive_icon_background: "#1c1b18"
+  # Icone adaptativo (Android 8+): cassete na zona segura + fundo verde-oliva
+  adaptive_icon_background: "#4f7d5b"
   adaptive_icon_foreground: "assets/icon/foreground.png"
   min_sdk_android: 21
 
@@ -64,10 +69,29 @@ flutter_launcher_icons:
 # The following section is specific to Flutter packages.
 flutter:
 
+  # Gera a classe AppLocalizations a partir dos .arb em lib/l10n.
+  generate: true
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  fonts:
+    # Oswald: condensada industrial (variable font, eixo de peso).
+    # Usada em labels/wordmark (serigrafia do chassi).
+    - family: Oswald
+      fonts:
+        - asset: assets/fonts/Oswald.ttf
+          weight: 300
+        - asset: assets/fonts/Oswald.ttf
+          weight: 500
+        - asset: assets/fonts/Oswald.ttf
+          weight: 700
+    # Share Tech Mono: visor digital (nome do som tocando).
+    - family: ShareTechMono
+      fonts:
+        - asset: assets/fonts/ShareTechMono-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

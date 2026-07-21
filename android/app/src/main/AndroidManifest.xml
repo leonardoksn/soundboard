@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Gravacao de audio pelo microfone (feature de gravar sons) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="soundboard"
         android:name="${applicationName}"

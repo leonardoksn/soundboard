@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/sound.dart';
+import 'playback_notifier.dart';
 import 'providers.dart';
 
 class SoundsNotifier extends AsyncNotifier<List<Sound>> {
@@ -17,15 +18,20 @@ class SoundsNotifier extends AsyncNotifier<List<Sound>> {
     required String sourceFilePath,
     required String name,
     required int color,
+    bool loop = false,
   }) async {
-    await ref
-        .read(soundRepositoryProvider)
-        .add(sourceFilePath: sourceFilePath, name: name, color: color);
+    await ref.read(soundRepositoryProvider).add(
+        sourceFilePath: sourceFilePath, name: name, color: color, loop: loop);
     await _refresh();
   }
 
   Future<void> rename(int id, String name) async {
     await ref.read(soundRepositoryProvider).rename(id, name);
+    await _refresh();
+  }
+
+  Future<void> setLoop(int id, bool loop) async {
+    await ref.read(soundRepositoryProvider).setLoop(id, loop);
     await _refresh();
   }
 
@@ -35,6 +41,8 @@ class SoundsNotifier extends AsyncNotifier<List<Sound>> {
   }
 
   Future<void> remove(int id) async {
+    // Interrompe a reprodução (inclusive em loop) antes de apagar o arquivo.
+    await ref.read(playingSoundsProvider.notifier).stopById(id);
     await ref.read(soundRepositoryProvider).remove(id);
     await _refresh();
   }
