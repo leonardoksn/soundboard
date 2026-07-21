@@ -4,38 +4,43 @@ import '../models/sound.dart';
 import 'providers.dart';
 import 'volume_notifier.dart';
 
-/// Guarda o id do som atualmente tocando (null = nada tocando).
-/// Zera automaticamente quando o áudio termina.
-class PlayingNotifier extends Notifier<int?> {
-  StreamSubscription<void>? _sub;
+/// Guarda os ids dos sons tocando no momento (permite reprodução simultânea).
+/// Um id sai do conjunto quando o áudio termina naturalmente ou é parado.
+class PlayingNotifier extends Notifier<Set<int>> {
+  StreamSubscription<int>? _sub;
 
   @override
-  int? build() {
+  Set<int> build() {
     final controller = ref.watch(audioControllerProvider);
-    _sub = controller.onComplete.listen((_) => state = null);
+    _sub = controller.onComplete.listen((id) {
+      state = {...state}..remove(id);
+    });
     ref.onDispose(() => _sub?.cancel());
-    return null;
+    return {};
   }
 
   Future<void> play(Sound sound) async {
+    final id = sound.id;
+    if (id == null) return;
     final controller = ref.read(audioControllerProvider);
-    // Reaplica o volume master a cada play — torna a reprodução determinística
-    // independente do estado interno do player.
+    // Reaplica o volume master a cada play (determinístico).
     await controller.setVolume(ref.read(masterVolumeProvider));
-    await controller.playFile(sound.filePath);
-    state = sound.id;
+    await controller.play(id, sound.filePath, loop: sound.loop);
+    state = {...state, id};
   }
 
-  Future<void> stop() async {
-    await ref.read(audioControllerProvider).stop();
-    state = null;
+  Future<void> stop(Sound sound) async {
+    final id = sound.id;
+    if (id == null) return;
+    await ref.read(audioControllerProvider).stop(id);
+    state = {...state}..remove(id);
   }
 
-  /// Toca o som; se ele já estiver tocando, para (comportamento de toggle).
+  /// Toca o som; se ele já estiver tocando, para (toggle).
   Future<void> toggle(Sound sound) {
-    return state == sound.id ? stop() : play(sound);
+    return state.contains(sound.id) ? stop(sound) : play(sound);
   }
 }
 
-final playingSoundProvider =
-    NotifierProvider<PlayingNotifier, int?>(PlayingNotifier.new);
+final playingSoundsProvider =
+    NotifierProvider<PlayingNotifier, Set<int>>(PlayingNotifier.new);

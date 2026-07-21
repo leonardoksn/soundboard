@@ -9,6 +9,7 @@ void main() {
       'file_path': '/dados/sounds/abc.mp3',
       'color': 0xFFEF5350,
       'position': 2,
+      'loop': 1,
     };
     final sound = Sound.fromMap(map);
     expect(sound.id, 1);
@@ -16,6 +17,7 @@ void main() {
     expect(sound.filePath, '/dados/sounds/abc.mp3');
     expect(sound.color, 0xFFEF5350);
     expect(sound.position, 2);
+    expect(sound.loop, isTrue);
     expect(sound.toMap(), map);
   });
 

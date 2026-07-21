@@ -47,6 +47,7 @@ class _SoundForm extends ConsumerStatefulWidget {
 class _SoundFormState extends ConsumerState<_SoundForm> {
   late final TextEditingController _nameController;
   late int _color;
+  late bool _loop;
   String? _pickedPath;
 
   bool get _isEditing => widget.existing != null;
@@ -56,6 +57,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
     super.initState();
     _nameController = TextEditingController(text: widget.existing?.name ?? '');
     _color = widget.existing?.color ?? kSoundColorsFirst;
+    _loop = widget.existing?.loop ?? false;
   }
 
   @override
@@ -81,11 +83,15 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
       final id = widget.existing!.id!;
       await notifier.rename(id, name);
       await notifier.changeColor(id, _color);
+      await notifier.setLoop(id, _loop);
     } else {
       if (_pickedPath == null) return;
       try {
         await notifier.add(
-            sourceFilePath: _pickedPath!, name: name, color: _color);
+            sourceFilePath: _pickedPath!,
+            name: name,
+            color: _color,
+            loop: _loop);
       } catch (_) {
         messenger.showSnackBar(
             SnackBar(content: Text(l10n.importError)));
@@ -201,6 +207,27 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
                   selected: _color == c,
                   onTap: () => setState(() => _color = c),
                 ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.loop, size: 18, color: BoardColors.creamDim),
+                  const SizedBox(width: 8),
+                  Text(l10n.loop.toUpperCase(), style: BoardText.stencil),
+                ],
+              ),
+              Switch(
+                value: _loop,
+                activeThumbColor: BoardColors.cream,
+                activeTrackColor: BoardColors.rec,
+                inactiveThumbColor: BoardColors.creamDim,
+                inactiveTrackColor: BoardColors.well,
+                onChanged: (v) => setState(() => _loop = v),
+              ),
             ],
           ),
           const SizedBox(height: 22),
