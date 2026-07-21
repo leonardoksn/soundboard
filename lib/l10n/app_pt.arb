@@ -19,5 +19,8 @@
   "cancel": "Cancelar",
   "importError": "não foi possível importar",
   "settings": "Ajustes",
-  "language": "Idioma"
+  "language": "Idioma",
+  "level": "Nível",
+  "play": "Tocar",
+  "stop": "Parar"
 }

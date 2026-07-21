@@ -3,6 +3,9 @@ import 'package:audioplayers/audioplayers.dart';
 abstract class SoundPlayer {
   Future<void> play(String path);
   Future<void> stop();
+
+  /// Define o volume de reprodução (0.0 a 1.0).
+  Future<void> setVolume(double volume);
   Future<void> dispose();
 
   /// Emite um evento quando a reprodução do áudio atual termina naturalmente.
@@ -17,6 +20,9 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
 
   @override
   Future<void> stop() => _player.stop();
+
+  @override
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
 
   @override
   Future<void> dispose() => _player.dispose();
@@ -34,6 +40,10 @@ class AudioController {
     await _player.stop();
     await _player.play(path);
   }
+
+  Future<void> stop() => _player.stop();
+
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
 
   Stream<void> get onComplete => _player.onComplete;
 

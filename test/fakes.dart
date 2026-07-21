@@ -1,5 +1,28 @@
+import 'dart:async';
+
 import 'package:soundboard/data/sound_repository.dart';
 import 'package:soundboard/models/sound.dart';
+import 'package:soundboard/state/audio_controller.dart';
+
+/// Player de áudio fake — registra chamadas e permite disparar onComplete.
+class FakePlayer implements SoundPlayer {
+  final List<String> calls = [];
+  final StreamController<void> _complete = StreamController<void>.broadcast();
+
+  @override
+  Future<void> play(String path) async => calls.add('play:$path');
+  @override
+  Future<void> stop() async => calls.add('stop');
+  @override
+  Future<void> setVolume(double volume) async => calls.add('setVolume:$volume');
+  @override
+  Future<void> dispose() async => calls.add('dispose');
+  @override
+  Stream<void> get onComplete => _complete.stream;
+
+  /// Simula o término natural da reprodução.
+  void complete() => _complete.add(null);
+}
 
 /// Repositório em memória para widget tests — evita I/O real de disco/SQLite,
 /// cujos futuros não completam sob o fake-async do testWidgets.
