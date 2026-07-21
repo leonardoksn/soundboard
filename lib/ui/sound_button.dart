@@ -126,6 +126,12 @@ class _SoundButtonState extends State<SoundButton> {
                   onPressed: widget.onEdit,
                 ),
               ),
+              if (widget.sound.loop)
+                const Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: Icon(Icons.loop, size: 13, color: BoardColors.creamDim),
+                ),
               if (widget.isPlaying)
                 Align(
                   alignment: Alignment.bottomCenter,

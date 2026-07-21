@@ -77,4 +77,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get stop => 'Parar';
+
+  @override
+  String get loop => 'Repetir';
 }

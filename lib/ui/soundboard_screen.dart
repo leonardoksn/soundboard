@@ -18,15 +18,29 @@ class SoundboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final soundsAsync = ref.watch(soundsProvider);
-    final playingId = ref.watch(playingSoundProvider);
+    final playingIds = ref.watch(playingSoundsProvider);
 
     final sounds = soundsAsync.valueOrNull ?? const <Sound>[];
-    Sound? playing;
-    for (final s in sounds) {
-      if (s.id == playingId) {
-        playing = s;
-        break;
+    // Visor: vazio → READY; 1 tocando → nome/cor; vários → contagem.
+    String readout;
+    Color readoutColor;
+    if (playingIds.isEmpty) {
+      readout = l10n.ready.toUpperCase();
+      readoutColor = BoardColors.creamDim;
+    } else if (playingIds.length == 1) {
+      Sound? playing;
+      for (final s in sounds) {
+        if (s.id == playingIds.first) {
+          playing = s;
+          break;
+        }
       }
+      readout = (playing?.name ?? l10n.ready).toUpperCase();
+      readoutColor =
+          playing == null ? BoardColors.creamDim : Color(playing.color);
+    } else {
+      readout = '▶ ${playingIds.length}';
+      readoutColor = BoardColors.rec;
     }
 
     return Scaffold(
@@ -44,11 +58,7 @@ class SoundboardScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            _Faceplate(
-              readout: playing?.name.toUpperCase() ?? l10n.ready.toUpperCase(),
-              readoutColor:
-                  playing == null ? BoardColors.creamDim : Color(playing.color),
-            ),
+            _Faceplate(readout: readout, readoutColor: readoutColor),
             Expanded(
               child: _Well(
                 child: soundsAsync.when(
@@ -81,9 +91,9 @@ class SoundboardScreen extends ConsumerWidget {
                           SoundButton(
                             key: ValueKey(sound.id),
                             sound: sound,
-                            isPlaying: playingId == sound.id,
+                            isPlaying: playingIds.contains(sound.id),
                             onTap: () => ref
-                                .read(playingSoundProvider.notifier)
+                                .read(playingSoundsProvider.notifier)
                                 .toggle(sound),
                             onEdit: () =>
                                 showAddEditSoundSheet(context, existing: sound),

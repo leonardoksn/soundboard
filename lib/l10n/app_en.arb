@@ -22,5 +22,6 @@
   "language": "Language",
   "level": "Level",
   "play": "Play",
-  "stop": "Stop"
+  "stop": "Stop",
+  "loop": "Loop"
 }

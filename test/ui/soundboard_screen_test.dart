@@ -55,7 +55,7 @@ void main() {
     // segundo toque para (toggle)
     await tester.tap(find.byType(SoundButton));
     await tester.pump();
-    expect(player.calls, contains('stop'));
+    expect(player.calls.any((c) => c.startsWith('stop:')), isTrue);
   });
 
   testWidgets('fader de volume (LEVEL) aparece na faceplate', (tester) async {

@@ -7,21 +7,24 @@ import 'package:soundboard/state/audio_controller.dart';
 /// Player de áudio fake — registra chamadas e permite disparar onComplete.
 class FakePlayer implements SoundPlayer {
   final List<String> calls = [];
-  final StreamController<void> _complete = StreamController<void>.broadcast();
+  final StreamController<int> _complete = StreamController<int>.broadcast();
 
   @override
-  Future<void> play(String path) async => calls.add('play:$path');
+  Future<void> play(int id, String path, {bool loop = false}) async =>
+      calls.add('play:$id:$path${loop ? ':loop' : ''}');
   @override
-  Future<void> stop() async => calls.add('stop');
+  Future<void> stop(int id) async => calls.add('stop:$id');
+  @override
+  Future<void> stopAll() async => calls.add('stopAll');
   @override
   Future<void> setVolume(double volume) async => calls.add('setVolume:$volume');
   @override
   Future<void> dispose() async => calls.add('dispose');
   @override
-  Stream<void> get onComplete => _complete.stream;
+  Stream<int> get onComplete => _complete.stream;
 
-  /// Simula o término natural da reprodução.
-  void complete() => _complete.add(null);
+  /// Simula o término natural da reprodução da voz [id].
+  void complete(int id) => _complete.add(id);
 }
 
 /// Repositório em memória para widget tests — evita I/O real de disco/SQLite,
@@ -42,6 +45,7 @@ class FakeSoundRepository implements SoundRepository {
     required String sourceFilePath,
     required String name,
     required int color,
+    bool loop = false,
   }) async {
     final s = Sound(
       id: _nextId++,
@@ -49,6 +53,7 @@ class FakeSoundRepository implements SoundRepository {
       filePath: sourceFilePath,
       color: color,
       position: _sounds.length,
+      loop: loop,
     );
     _sounds.add(s);
     return s;
@@ -64,6 +69,12 @@ class FakeSoundRepository implements SoundRepository {
   Future<void> changeColor(int id, int color) async {
     final i = _sounds.indexWhere((s) => s.id == id);
     if (i >= 0) _sounds[i] = _sounds[i].copyWith(color: color);
+  }
+
+  @override
+  Future<void> setLoop(int id, bool loop) async {
+    final i = _sounds.indexWhere((s) => s.id == id);
+    if (i >= 0) _sounds[i] = _sounds[i].copyWith(loop: loop);
   }
 
   @override

@@ -18,6 +18,7 @@ class SoundRepository {
     required String sourceFilePath,
     required String name,
     required int color,
+    bool loop = false,
   }) async {
     final newPath = await storage.importFile(sourceFilePath);
     final result = await db.rawQuery(
@@ -29,6 +30,7 @@ class SoundRepository {
       filePath: newPath,
       color: color,
       position: position,
+      loop: loop,
     );
     final id = await db.insert(AppDatabase.table, sound.toMap());
     return sound.copyWith(id: id);
@@ -36,6 +38,11 @@ class SoundRepository {
 
   Future<void> rename(int id, String name) async {
     await db.update(AppDatabase.table, {'name': name},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> setLoop(int id, bool loop) async {
+    await db.update(AppDatabase.table, {'loop': loop ? 1 : 0},
         where: 'id = ?', whereArgs: [id]);
   }
 

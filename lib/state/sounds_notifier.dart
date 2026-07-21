@@ -17,15 +17,20 @@ class SoundsNotifier extends AsyncNotifier<List<Sound>> {
     required String sourceFilePath,
     required String name,
     required int color,
+    bool loop = false,
   }) async {
-    await ref
-        .read(soundRepositoryProvider)
-        .add(sourceFilePath: sourceFilePath, name: name, color: color);
+    await ref.read(soundRepositoryProvider).add(
+        sourceFilePath: sourceFilePath, name: name, color: color, loop: loop);
     await _refresh();
   }
 
   Future<void> rename(int id, String name) async {
     await ref.read(soundRepositoryProvider).rename(id, name);
+    await _refresh();
+  }
+
+  Future<void> setLoop(int id, bool loop) async {
+    await ref.read(soundRepositoryProvider).setLoop(id, loop);
     await _refresh();
   }
 

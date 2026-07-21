@@ -22,5 +22,6 @@
   "language": "Idioma",
   "level": "Nível",
   "play": "Tocar",
-  "stop": "Parar"
+  "stop": "Parar",
+  "loop": "Repetir"
 }

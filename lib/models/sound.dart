@@ -4,6 +4,7 @@ class Sound {
   final String filePath;
   final int color;
   final int position;
+  final bool loop;
 
   const Sound({
     this.id,
@@ -11,6 +12,7 @@ class Sound {
     required this.filePath,
     required this.color,
     required this.position,
+    this.loop = false,
   });
 
   Sound copyWith({
@@ -19,6 +21,7 @@ class Sound {
     String? filePath,
     int? color,
     int? position,
+    bool? loop,
   }) {
     return Sound(
       id: id ?? this.id,
@@ -26,6 +29,7 @@ class Sound {
       filePath: filePath ?? this.filePath,
       color: color ?? this.color,
       position: position ?? this.position,
+      loop: loop ?? this.loop,
     );
   }
 
@@ -36,6 +40,7 @@ class Sound {
       'file_path': filePath,
       'color': color,
       'position': position,
+      'loop': loop ? 1 : 0,
     };
   }
 
@@ -46,6 +51,7 @@ class Sound {
       filePath: map['file_path'] as String,
       color: map['color'] as int,
       position: map['position'] as int,
+      loop: (map['loop'] as int? ?? 0) == 1,
     );
   }
 }
