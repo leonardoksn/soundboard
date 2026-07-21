@@ -3,6 +3,34 @@ import 'dart:async';
 import 'package:soundboard/data/sound_repository.dart';
 import 'package:soundboard/models/sound.dart';
 import 'package:soundboard/state/audio_controller.dart';
+import 'package:soundboard/state/recorder.dart';
+
+/// Gravador fake — registra chamadas e devolve permissão/caminho fixos.
+class FakeRecorder implements Recorder {
+  final bool permission;
+  final String? stopPath;
+  final List<String> calls = [];
+
+  FakeRecorder({this.permission = true, this.stopPath});
+
+  @override
+  Future<bool> hasPermission() async {
+    calls.add('perm');
+    return permission;
+  }
+
+  @override
+  Future<void> start(String path) async => calls.add('start');
+
+  @override
+  Future<String?> stop() async {
+    calls.add('stop');
+    return stopPath;
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
 
 /// Player de áudio fake — registra chamadas e permite disparar onComplete.
 class FakePlayer implements SoundPlayer {

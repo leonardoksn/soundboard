@@ -23,5 +23,7 @@
   "level": "Level",
   "play": "Play",
   "stop": "Stop",
-  "loop": "Loop"
+  "loop": "Loop",
+  "record": "Record",
+  "micDenied": "Microphone permission denied"
 }

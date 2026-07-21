@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/sound.dart';
 import '../state/providers.dart';
+import '../state/recorder.dart';
 import 'sound_colors.dart';
 import 'theme.dart';
 
@@ -49,6 +54,9 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
   late int _color;
   late bool _loop;
   String? _pickedPath;
+  bool _recording = false;
+  int _elapsed = 0;
+  Timer? _timer;
 
   bool get _isEditing => widget.existing != null;
 
@@ -62,6 +70,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _nameController.dispose();
     super.dispose();
   }
@@ -69,6 +78,37 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
   Future<void> _pickFile() async {
     final path = await ref.read(filePickerProvider)();
     if (path != null) setState(() => _pickedPath = path);
+  }
+
+  Future<void> _startRecording() async {
+    final recorder = ref.read(recorderProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    if (!await recorder.hasPermission()) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.micDenied)));
+      return;
+    }
+    final dir = await getTemporaryDirectory();
+    final path = p.join(
+        dir.path, 'rec_${DateTime.now().millisecondsSinceEpoch}.m4a');
+    await recorder.start(path);
+    if (!mounted) return;
+    setState(() {
+      _recording = true;
+      _elapsed = 0;
+    });
+    _timer = Timer.periodic(
+        const Duration(seconds: 1), (_) => setState(() => _elapsed++));
+  }
+
+  Future<void> _stopRecording() async {
+    _timer?.cancel();
+    final path = await ref.read(recorderProvider).stop();
+    if (!mounted) return;
+    setState(() {
+      _recording = false;
+      if (path != null) _pickedPath = path;
+    });
   }
 
   Future<void> _save() async {
@@ -139,7 +179,8 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
         border: Border(top: BorderSide(color: Colors.black45, width: 2)),
       ),
       padding: const EdgeInsets.fromLTRB(18, 12, 18, 18),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -159,19 +200,51 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
               style: BoardText.wordmark.copyWith(fontSize: 18)),
           const SizedBox(height: 16),
           if (!_isEditing)
-            OutlinedButton.icon(
-              onPressed: _pickFile,
-              icon: const Icon(Icons.audiotrack, color: BoardColors.cream),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: BoardColors.cream,
-                side: const BorderSide(color: BoardColors.creamDim),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              label: Text(
-                (_pickedPath == null ? l10n.chooseFile : l10n.fileSelected)
-                    .toUpperCase(),
-                style: BoardText.stencil.copyWith(color: BoardColors.cream),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _recording ? null : _pickFile,
+                    icon: const Icon(Icons.audiotrack, size: 18),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: BoardColors.cream,
+                      side: const BorderSide(color: BoardColors.creamDim),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    label: Text(
+                      (_pickedPath == null ? l10n.chooseFile : l10n.fileSelected)
+                          .toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          BoardText.stencil.copyWith(color: BoardColors.cream),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _recording ? _stopRecording : _startRecording,
+                    icon: Icon(_recording ? Icons.stop : Icons.mic, size: 18),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: BoardColors.cream,
+                      backgroundColor: _recording ? BoardColors.rec : null,
+                      side: BorderSide(
+                          color: _recording
+                              ? BoardColors.rec
+                              : BoardColors.creamDim),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    label: Text(
+                      _recording ? '${_elapsed}s' : l10n.record.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          BoardText.stencil.copyWith(color: BoardColors.cream),
+                    ),
+                  ),
+                ),
+              ],
             ),
           const SizedBox(height: 14),
           TextField(
@@ -232,7 +305,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
           ),
           const SizedBox(height: 22),
           FilledButton(
-            onPressed: _save,
+            onPressed: _recording ? null : _save,
             style: FilledButton.styleFrom(
               backgroundColor: BoardColors.rec,
               foregroundColor: BoardColors.cream,
@@ -252,6 +325,7 @@ class _SoundFormState extends ConsumerState<_SoundForm> {
                       BoardText.stencil.copyWith(color: BoardColors.rec)),
             ),
         ],
+        ),
       ),
     );
   }

@@ -23,5 +23,7 @@
   "level": "Nível",
   "play": "Tocar",
   "stop": "Parar",
-  "loop": "Repetir"
+  "loop": "Repetir",
+  "record": "Gravar",
+  "micDenied": "Permissão de microfone negada"
 }
