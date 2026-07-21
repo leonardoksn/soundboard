@@ -67,6 +67,28 @@ void main() {
     expect(fake.calls, contains('play:3:/c.mp3:loop'));
   });
 
+  test('remover um som tocando (em loop) interrompe a reprodução', () async {
+    final fake = FakePlayer();
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final repo = FakeSoundRepository([_loopSound]);
+    final c = ProviderContainer(overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      audioControllerProvider.overrideWithValue(AudioController(fake)),
+      soundRepositoryProvider.overrideWithValue(repo),
+    ]);
+    addTearDown(c.dispose);
+
+    await c.read(soundsProvider.future);
+    await c.read(playingSoundsProvider.notifier).play(_loopSound);
+    expect(c.read(playingSoundsProvider), {3});
+
+    await c.read(soundsProvider.notifier).remove(3);
+
+    expect(c.read(playingSoundsProvider), isEmpty);
+    expect(fake.calls, contains('stop:3'));
+  });
+
   test('onComplete remove apenas o id que terminou', () async {
     final fake = FakePlayer();
     final c = await _container(fake);

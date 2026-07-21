@@ -29,9 +29,14 @@ class PlayingNotifier extends Notifier<Set<int>> {
     state = {...state, id};
   }
 
-  Future<void> stop(Sound sound) async {
+  Future<void> stop(Sound sound) {
     final id = sound.id;
-    if (id == null) return;
+    if (id == null) return Future.value();
+    return stopById(id);
+  }
+
+  /// Para a reprodução de um id específico (usado ao remover um som).
+  Future<void> stopById(int id) async {
     await ref.read(audioControllerProvider).stop(id);
     state = {...state}..remove(id);
   }
