@@ -57,8 +57,8 @@ flutter_launcher_icons:
   ios: false
   # Icone legado / launchers antigos: arte cheia sobre fundo escuro
   image_path: "assets/icon/legacy.png"
-  # Icone adaptativo (Android 8+): arte reduzida na zona segura + fundo escuro
-  adaptive_icon_background: "#1c1b18"
+  # Icone adaptativo (Android 8+): cassete na zona segura + fundo verde-oliva
+  adaptive_icon_background: "#4f7d5b"
   adaptive_icon_foreground: "assets/icon/foreground.png"
   min_sdk_android: 21
 
