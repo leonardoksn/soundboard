@@ -80,4 +80,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get loop => 'Repetir';
+
+  @override
+  String get record => 'Gravar';
+
+  @override
+  String get micDenied => 'Permissão de microfone negada';
 }

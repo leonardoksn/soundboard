@@ -79,4 +79,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loop => 'Loop';
+
+  @override
+  String get record => 'Record';
+
+  @override
+  String get micDenied => 'Microphone permission denied';
 }
