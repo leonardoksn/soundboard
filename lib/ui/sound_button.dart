@@ -33,12 +33,17 @@ class _SoundButtonState extends State<SoundButton> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final led = Color(widget.sound.color);
     final lit = widget.isPlaying;
     final noAnim = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final down = _pressed && !noAnim;
 
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: widget.sound.name,
+      hint: widget.isPlaying ? l10n.stop : l10n.play,
+      child: GestureDetector(
       onTap: widget.onTap,
       onTapDown: (_) => _setPressed(true),
       onTapUp: (_) => _setPressed(false),
@@ -132,6 +137,7 @@ class _SoundButtonState extends State<SoundButton> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

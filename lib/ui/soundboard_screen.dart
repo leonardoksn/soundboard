@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/sound.dart';
 import '../state/playback_notifier.dart';
 import '../state/providers.dart';
+import '../state/volume_notifier.dart';
 import 'add_edit_sound_sheet.dart';
 import 'settings_sheet.dart';
 import 'sound_button.dart';
@@ -83,7 +84,7 @@ class SoundboardScreen extends ConsumerWidget {
                             isPlaying: playingId == sound.id,
                             onTap: () => ref
                                 .read(playingSoundProvider.notifier)
-                                .play(sound),
+                                .toggle(sound),
                             onEdit: () =>
                                 showAddEditSoundSheet(context, existing: sound),
                           ),
@@ -151,9 +152,48 @@ class _Faceplate extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
+          const _LevelFader(),
+          const SizedBox(height: 10),
           const _Band(),
         ],
       ),
+    );
+  }
+}
+
+/// Fader "LEVEL" — volume master, estilo mixer de hardware.
+class _LevelFader extends ConsumerWidget {
+  const _LevelFader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final volume = ref.watch(masterVolumeProvider);
+    final notifier = ref.read(masterVolumeProvider.notifier);
+    return Row(
+      children: [
+        Text(l10n.level.toUpperCase(), style: BoardText.stencil),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 3,
+              activeTrackColor: BoardColors.rec,
+              inactiveTrackColor: BoardColors.well,
+              thumbColor: BoardColors.cream,
+              overlayColor: BoardColors.rec.withValues(alpha: 0.15),
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            ),
+            child: Slider(
+              value: volume,
+              // aplica ao vivo enquanto arrasta (sem gravar em disco)
+              onChanged: (v) => notifier.setVolume(v, persist: false),
+              // grava a preferência só ao soltar
+              onChangeEnd: (v) => notifier.setVolume(v, persist: true),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

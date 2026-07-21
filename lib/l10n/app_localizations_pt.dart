@@ -68,4 +68,13 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get language => 'Idioma';
+
+  @override
+  String get level => 'Nível';
+
+  @override
+  String get play => 'Tocar';
+
+  @override
+  String get stop => 'Parar';
 }

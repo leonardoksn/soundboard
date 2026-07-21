@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:soundboard/l10n/app_localizations.dart';
 import 'package:soundboard/models/sound.dart';
 import 'package:soundboard/state/providers.dart';
 import 'package:soundboard/ui/add_edit_sound_sheet.dart';
@@ -20,6 +21,9 @@ void main() {
     await tester.pumpWidget(ProviderScope(
       overrides: [soundRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp(
+        locale: const Locale('pt'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Builder(
             builder: (context) => ElevatedButton(
@@ -35,7 +39,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).first, 'Novo');
-    await tester.tap(find.text('Salvar'));
+    await tester.tap(find.text('SALVAR'));
     await tester.pumpAndSettle();
 
     final all = await repo.getAll();
