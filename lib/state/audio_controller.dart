@@ -21,6 +21,16 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
   final StreamController<int> _complete = StreamController<int>.broadcast();
   double _volume = 1.0;
 
+  /// Não solicita foco de áudio exclusivo: várias vozes tocam juntas (mix)
+  /// sem que uma interrompa a outra. Conteúdo tratado como efeito sonoro.
+  static final AudioContext _context = AudioContext(
+    android: const AudioContextAndroid(
+      contentType: AndroidContentType.sonification,
+      usageType: AndroidUsageType.media,
+      audioFocus: AndroidAudioFocus.none,
+    ),
+  );
+
   AudioPlayer _voice(int id) {
     return _players.putIfAbsent(id, () {
       final player = AudioPlayer();
@@ -32,6 +42,7 @@ class AudioPlayersSoundPlayer implements SoundPlayer {
   @override
   Future<void> play(int id, String path, {bool loop = false}) async {
     final player = _voice(id);
+    await player.setAudioContext(_context);
     await player.setReleaseMode(loop ? ReleaseMode.loop : ReleaseMode.stop);
     await player.setVolume(_volume);
     await player.stop();
