@@ -148,7 +148,7 @@ class _Faceplate extends StatelessWidget {
                   ],
                 ),
               ),
-              Text('SOUNDBOARD', style: BoardText.wordmark),
+              Text('RETRO BOARD', style: BoardText.wordmark),
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.settings, size: 20),
