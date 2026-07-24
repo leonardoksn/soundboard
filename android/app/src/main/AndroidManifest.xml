@@ -2,7 +2,7 @@
     <!-- Gravacao de audio pelo microfone (feature de gravar sons) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
-        android:label="soundboard"
+        android:label="Retro Board"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
