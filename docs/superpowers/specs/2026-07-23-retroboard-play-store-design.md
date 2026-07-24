@@ -49,14 +49,21 @@ submissão.
 ### 3.2 Assinatura de release (keystore)
 
 - Gerar keystore `.jks` local com `keytool` (validade longa, ex. 27+ anos).
-- Criar `android/key.properties` (adicionado ao `.gitignore`, nunca commitado)
-  com `storePassword`, `keyPassword`, `keyAlias`, `storeFile`.
+  Esta é a **upload key** — ver nota sobre Play App Signing abaixo.
+- Criar `android/key.properties` com `storePassword`, `keyPassword`,
+  `keyAlias`, `storeFile`. O `android/.gitignore` **já ignora**
+  `key.properties`, `**/*.keystore` e `**/*.jks`, então nada de segredo é
+  commitado — basta confirmar que os arquivos caem nesses padrões.
 - Configurar `signingConfigs.release` em `android/app/build.gradle.kts` para
   ler esse arquivo e assinar o `release` com a keystore real, em vez da
   debug key atual (`signingConfig = signingConfigs.getByName("debug")`).
-- **Backup:** a keystore e as senhas precisam ser guardadas em local seguro
-  fora do disco local (gerenciador de senhas ou storage cifrado). Perda =
-  impossível publicar atualizações futuras do mesmo app.
+- **Play App Signing:** desde 2021 todo app novo usa Google Play App
+  Signing. A keystore gerada aqui é a **upload key**; a **app signing key**
+  final fica sob custódia do Google. Consequência: se a upload key for
+  perdida, dá pra **solicitar reset ao Google** — não é irreversível.
+- **Backup:** ainda assim, guardar a keystore e as senhas em local seguro
+  fora do disco local (gerenciador de senhas ou storage cifrado) evita o
+  transtorno do fluxo de reset. Recomendado, não crítico.
 
 ### 3.3 Política de privacidade
 
@@ -72,6 +79,10 @@ submissão.
 
 ### 3.4 Play Console — ficha e Data Safety
 
+- **Play App Signing:** no primeiro upload, o Play Console vai pedir o
+  enrollment no Play App Signing (padrão para apps novos). A keystore local
+  serve como upload key; o Google passa a guardar a chave de assinatura
+  final.
 - **Data safety form:** declarar que o app não coleta nem compartilha
   dados; justificar o uso de `RECORD_AUDIO` (gravação de sons feita pelo
   próprio usuário, sem envio externo).
@@ -95,7 +106,7 @@ submissão.
 
 | Risco | Mitigação |
 |-------|-----------|
-| Perda da keystore de release | Backup imediato em gerenciador de senhas/storage cifrado, fora do repo e fora do disco local |
+| Perda da upload key | Sob Play App Signing é recuperável via reset com o Google; mesmo assim, backup em gerenciador de senhas/storage cifrado evita o transtorno |
 | Mudança de `applicationId` após a primeira publicação | Não é possível — por isso a troca é feita **agora**, antes do primeiro upload |
 | Permissão de microfone sem política de privacidade | Página publicada via GitHub Pages antes da submissão, linkada no Play Console |
 | Rejeição na revisão por dados incompletos na ficha | Preencher Data Safety e classificação de conteúdo com atenção antes de enviar |
